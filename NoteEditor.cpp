@@ -233,6 +233,16 @@ std::string NoteEditor::get_current_title() const {
     return current_title;
 }
 
+std::string read_api_key(const std::string& filepath) {
+    std::ifstream file(filepath);
+    std::string key;
+    if (file.is_open()) {
+        std::getline(file, key);
+        file.close();
+    }
+    return key;
+}
+
 void NoteEditor::send_to_openrouter(const Json::Value& tasks_json) {
     CURL* curl = curl_easy_init();
     if (!curl) return;
@@ -292,8 +302,10 @@ void NoteEditor::send_to_openrouter(const Json::Value& tasks_json) {
 
     // ✅ Setup headers
     struct curl_slist* headers = nullptr;
-    headers = curl_slist_append(headers, "Content-Type: application/json");
-    headers = curl_slist_append(headers, "Authorization: Bearer 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");
+
+    std::string api_key = read_api_key("/home/pratiek/Downloads/Bakchod_Projects/bakchod-notetaking/apikey.txt");
+    std::string header = "Authorization: Bearer " + api_key;
+    headers = curl_slist_append(headers, header.c_str());
 
     // ✅ Set curl options
     curl_easy_setopt(curl, CURLOPT_URL, "https://openrouter.ai/api/v1/chat/completions");
